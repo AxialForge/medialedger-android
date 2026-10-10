@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # Updates only install over an existing app when the signing key matches,
+      # so CI signs with the same key as local builds (the debug keystore, kept in a secret).
+      - name: Restore signing key
+        run: |
+          mkdir -p ~/.android
+          echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
+
+      - name: Check tag matches pubspec version
+        run: |
+          want="${GITHUB_REF_NAME#v}"
+          have="$(grep '^version:' pubspec.yaml | sed 's/version: *//; s/+.*//')"
+          if [ "$want" != "$have" ]; then echo "tag $want != pubspec $have"; exit 1; fi
+
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+      - run: flutter build apk --release
+
+      - name: Name the asset the in-app updater looks for
+        run: cp build/app/outputs/flutter-apk/app-release.apk MediaLedger.apk
+
+      - name: Release notes from CHANGELOG
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          awk -v v="$v" '$0 ~ "^## \[?"v"\]?" {f=1; next} /^## / {f=0} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "MediaLedger Android $v" > notes.md
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" MediaLedger.apk --title "MediaLedger Android $GITHUB_REF_NAME" --notes-file notes.md
