@@ -24,7 +24,7 @@ Release: bump `pubspec.yaml` + `CHANGELOG.md`, `git tag vX.Y.Z && git push origi
   terminal panel (`run_in_terminal`), not Bash/PowerShell tools.
 - **Terminal `cwd` must be inside the session folders**; use `cd '...'; flutter ...` in the command instead.
 - **NDK/CMake are auto-installed by Gradle** into `C:\Android\sdk`; `sdkmanager` needs `'"ndk;28.2.13676358"'` quoting.
-- **Version codes:** `--split-per-abi` adds 1000/2000/4000 to the build number. The `+10000` build number keeps the
+- **Version codes:** `--split-per-abi` adds 1000/2000/4000 to the build number. The `+10000` build number (now `+20000`) keeps the
   universal APK above any split build, otherwise installing it is a "downgrade".
 - **Signing key = the local debug keystore** (`~/.android/debug.keystore`), mirrored in the `DEBUG_KEYSTORE_B64` secret.
   A different key makes updates fail with a signature mismatch; users would have to uninstall first.

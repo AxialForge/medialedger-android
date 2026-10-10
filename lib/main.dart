@@ -184,7 +184,8 @@ class _WebShellState extends State<WebShell> {
         },
         // Caddy "tls internal" certificates are not in Android's trust store; the user typed this address.
         onSslAuthError: (req) => req.proceed(),
-        onNavigationRequest: (nav) => nav.url.startsWith(widget.base) ? NavigationDecision.navigate : NavigationDecision.prevent,
+        // Redirects (http -> https, a different port or name) must load; only non-web schemes are refused.
+        onNavigationRequest: (nav) => nav.url.startsWith('http://') || nav.url.startsWith('https://') ? NavigationDecision.navigate : NavigationDecision.prevent,
       ))
       ..loadRequest(Uri.parse(widget.base));
   }

@@ -20,7 +20,7 @@ flutter build apk --release
 
 ## Release
 
-1. Bump `version:` in `pubspec.yaml` (keep the `+10000` build number or higher) and add a `CHANGELOG.md` section.
+1. Bump `version:` in `pubspec.yaml` (keep the build number rising; it must stay above any `--split-per-abi` build you sideloaded (those add up to 4000)) and add a `CHANGELOG.md` section.
 2. Commit, then `git tag vX.Y.Z && git push origin main --tags`.
 3. CI builds the APK and attaches it as `MediaLedger.apk`.
 
