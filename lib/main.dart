@@ -129,6 +129,8 @@ class _SetupState extends State<Setup> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Center(child: Image.asset('assets/logo.png', width: 96, height: 96)),
+                const SizedBox(height: 8),
                 Text('MediaLedger', style: Theme.of(context).textTheme.headlineMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 20),
                 if (widget.error != null) Padding(padding: const EdgeInsets.only(bottom: 12), child: Text(widget.error!, style: TextStyle(color: Theme.of(context).colorScheme.error), textAlign: TextAlign.center)),

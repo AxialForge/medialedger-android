@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2
+- New MediaLedger logo: launcher icon and setup screen.
+
 ## 0.2.1
 - Fixes a blank screen when the server redirects (for example http to https, or to another port).
 
