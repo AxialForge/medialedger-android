@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.3
+- Menu button (bottom right): check for updates, reload, change server addresses.
+
 ## 0.2.2
 - New MediaLedger logo: launcher icon and setup screen.
 

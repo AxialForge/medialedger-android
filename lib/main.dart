@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'updater.dart';
 
 /// MediaLedger for Android: the server's own web UI in a full-screen WebView,
@@ -192,6 +193,35 @@ class _WebShellState extends State<WebShell> {
       ..loadRequest(Uri.parse(widget.base));
   }
 
+  Future<void> _checkUpdate() async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Checking for updates…')));
+    final u = await checkForUpdate();
+    if (!mounted) return;
+    messenger.hideCurrentSnackBar();
+    if (u != null) {
+      promptUpdate(context, u);
+    } else {
+      messenger.showSnackBar(const SnackBar(content: Text('You have the latest version.')));
+    }
+  }
+
+  void _menu() async {
+    final version = (await PackageInfo.fromPlatform()).version;
+    if (!mounted) return;
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (c) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(title: Text('MediaLedger Android $version'), subtitle: Text(widget.base)),
+          ListTile(leading: const Icon(Icons.system_update), title: const Text('Check for updates'), onTap: () { Navigator.pop(c); _checkUpdate(); }),
+          ListTile(leading: const Icon(Icons.refresh), title: const Text('Reload page'), onTap: () { Navigator.pop(c); ctl.reload(); }),
+          ListTile(leading: const Icon(Icons.dns_outlined), title: const Text('Change server addresses'), onTap: () { Navigator.pop(c); widget.onSettings(); }),
+        ]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
@@ -209,6 +239,14 @@ class _WebShellState extends State<WebShell> {
         body: SafeArea(
           child: Stack(children: [
             WebViewWidget(controller: ctl),
+            Positioned(
+              right: 6,
+              bottom: 6,
+              child: Opacity(
+                opacity: 0.55,
+                child: FloatingActionButton.small(heroTag: 'ml-menu', onPressed: _menu, child: const Icon(Icons.more_vert)),
+              ),
+            ),
             if (progress < 1 && !failed) LinearProgressIndicator(value: progress, minHeight: 2),
             if (failed)
               Container(
