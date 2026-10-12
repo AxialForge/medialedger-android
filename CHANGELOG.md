@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.3.1
+- Fixes sign-in failing with "HTTP 308" when the address redirects (for example http to https). Redirects are followed and the new address is remembered.
+
 ## 0.3.0
 - Native app: sign-in with two-factor, bottom navigation, and a native Home with counts, Continue watching and Next up, in the server's colors.
 - Every other server page opens inside the app as a web page (sidebar hidden) until it gets a native screen.

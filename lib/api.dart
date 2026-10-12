@@ -64,6 +64,12 @@ class Api {
     return s;
   }
 
+  Future<void> _replaceServer(String from, String to) async {
+    servers = [for (final s in servers) s == from ? to : s];
+    final p = await SharedPreferences.getInstance();
+    await p.setStringList('servers', servers);
+  }
+
   bool get hasSession => _cookie != null;
   String? get sessionValue => _cookie == null ? null : _cookie!.substring('ml_session='.length);
   String get base => active ?? (servers.isNotEmpty ? servers.first : '');
@@ -96,8 +102,17 @@ class Api {
     Object? last;
     for (final b in order) {
       try {
-        final r = await _client.post(Uri.parse('$b$path'), headers: _headers, body: jsonEncode(body)).timeout(const Duration(seconds: 20));
-        active = b;
+        var origin = b;
+        var r = await _client.post(Uri.parse('$origin$path'), headers: _headers, body: jsonEncode(body)).timeout(const Duration(seconds: 20));
+        // POST redirects are not followed automatically (http -> https, another port). Follow them here and
+        // remember the new origin so the next call goes straight there.
+        for (var hops = 0; hops < 3 && const [301, 302, 307, 308].contains(r.statusCode) && r.headers['location'] != null; hops++) {
+          final to = Uri.parse(origin).resolve(r.headers['location']!);
+          origin = '${to.scheme}://${to.authority}';
+          r = await _client.post(Uri.parse('$origin$path'), headers: _headers, body: jsonEncode(body)).timeout(const Duration(seconds: 20));
+        }
+        if (origin != b) await _replaceServer(b, origin);
+        active = origin;
         _grab(r);
         return r;
       } catch (e) {
